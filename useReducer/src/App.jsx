@@ -1,97 +1,69 @@
-import { useReducer, useState } from "react";
-import "./App.css";
-import Todo from "./Todo";
+import { useReducer } from "react";
+import { cartReducer, ACTIONS } from "./CartReducer";
 
-export const ACTIONS = {
-  ADD_TODO: "addTodo",
-  TOGGLE_TODO: "toggleTodo",
-  DELETE: "deleteTodo",
-};
-
-function reducer(todos, action) {
-  switch (action.type) {
-    case ACTIONS.ADD_TODO:
-      return [...todos, newTodo(action.payload.name)];
-    case ACTIONS.TOGGLE_TODO:
-      return todos.map((todo) => {
-        if (todo.id === action.payload.id) {
-          return { ...todo, complete: !todo.complete };
-        }
-        return todo;
-      });
-
-    case ACTIONS.DELETE:
-      return todos.filter((todo) => todo.id !== action.payload.id);
-
-    default:
-      return todos;
-  }
-}
-
-  function newTodo(name) {
-    return { id: Date.now(), name: name, complete: false };
-  }
-
-//   {
-//     /**this is for the counter */
-  
-
-//   // switch (action.type) {
-//   //   case "increment":
-//   //     return { count: state.count + 1 };
-//   //   case "decrement":
-//   //     return { count: state.count - 1 };
-//   //   default:
-//   //     return state;
-//   // }
-// }
+const initialCart = [];
 
 function App() {
-  const [todos, dispatch] = useReducer(reducer, []);
-  const [name, setName] = useState("");
+  const [cart, dispatch] = useReducer(cartReducer, initialCart);
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    dispatch({ type: ACTIONS.ADD_TODO, payload: { name: name } });
-    setName("");
-  }
-
-  console.log(todos);
-
-  {
-    /**Counter logic */
-  }
-
-  // function increment() {
-  //   dispatch({ type: "increment" });
-  // }
-  // function decrement() {
-  //   dispatch({ type: "decrement" });
-  // }
+  const sampleProduct = {
+    id: 1,
+    name: "Sample Product",
+    price: 100, // ✅ fixed typo (was 'prize')
+  };
 
   return (
     <>
-      {/* TODO-LIST */}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        ></input>
-      </form>
-      {todos.map((todo) => {
-        return <Todo key={todo.id} todo={todo} dispatch={dispatch} />;
-      })}
+      <h2>🛒 Shopping Cart</h2>
 
-      {/* this is for the counter */}
-
-      {/**<button style={{ width: 30, height: 30 }} onClick={increment}>
-        +
+      <button
+        onClick={() =>
+          dispatch({ type: ACTIONS.ADD_ITEM, payload: sampleProduct })
+        }
+      >
+        ADD Item
       </button>
-      {state.count}
-      <button style={{ width: 30, height: 30 }} onClick={decrement}>
-        -
-      </button>*/}
+
+      <button onClick={() => dispatch({ type: ACTIONS.CLEAR_CART })}>
+        Clear Cart
+      </button>
+
+      <ul>
+        {cart.map((item) => (
+          <li key={item.id}>
+            {item.name} - ₹{item.price} x {item.quantity}
+            <button
+              onClick={() =>
+                dispatch({ type: ACTIONS.INCREMENT, payload: { id: item.id } })
+              }
+            >
+              ➕
+            </button>
+            <button
+              onClick={() =>
+                dispatch({ type: ACTIONS.DECREMENT, payload: { id: item.id } })
+              }
+            >
+              ➖
+            </button>
+            <button
+              onClick={() =>
+                dispatch({
+                  type: ACTIONS.REMOVE_ITEM,
+                  payload: { id: item.id },
+                })
+              }
+            >
+              ❌
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <h4>
+        Total: ₹
+        {cart.reduce((total, item) => total + item.price * item.quantity, 0)}
+      </h4>
     </>
   );
 }
